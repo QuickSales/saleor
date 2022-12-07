@@ -28,6 +28,7 @@ All notable, unreleased changes to this project will be documented in this file.
 - Move checkout metadata to separate model - #11264  by @jakubkuc
 - Add ability to set a custom Celery queue for async webhook - #11511 by @NyanKiyoshi
 - Remove `CUSTOMER_UPDATED` webhook trigger from address mutations - #11395 by @jakubkuc
+- CORS is now handled in the ASGI layer - #11415 by @patrys
 
 # 3.9.0
 
