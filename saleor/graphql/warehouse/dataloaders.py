@@ -131,9 +131,7 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
 
         # Return the quantities after capping them at the maximum quantity allowed in
         # checkout. This prevent users from tracking the store's precise stock levels.
-        global_quantity_limit = (
-            site.settings.limit_quantity_per_checkout  # type: ignore
-        )
+        global_quantity_limit = site.settings.limit_quantity_per_checkout
         return [
             (
                 variant_id,
@@ -144,7 +142,7 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
 
     def get_warehouse_shipping_zones(self, country_code, channel_slug):
         """Get the WarehouseShippingZone instances for a given channel and country."""
-        WarehouseShippingZone = Warehouse.shipping_zones.through  # type: ignore
+        WarehouseShippingZone = Warehouse.shipping_zones.through
         warehouse_shipping_zones = WarehouseShippingZone.objects.using(
             self.database_connection_name
         ).all()
@@ -159,8 +157,8 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
                     Exists(shipping_zones.filter(pk=OuterRef("shippingzone_id")))
                 )
             if channel_slug:
-                ShippingZoneChannel = Channel.shipping_zones.through  # type: ignore
-                WarehouseChannel = Channel.warehouses.through  # type: ignore
+                ShippingZoneChannel = Channel.shipping_zones.through
+                WarehouseChannel = Channel.warehouses.through
                 channels = (
                     Channel.objects.using(self.database_connection_name)
                     .filter(slug=channel_slug)
@@ -199,7 +197,7 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
                 .filter(slug=channel_slug)
                 .values("pk")
             )
-            WarehouseChannel = Channel.warehouses.through  # type: ignore
+            WarehouseChannel = Channel.warehouses.through
             warehouse_channels = (
                 WarehouseChannel.objects.using(self.database_connection_name)
                 .filter(
@@ -220,7 +218,7 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
         """Prepare stock id to quantity reserved map for provided variant ids."""
         stocks_reservations = defaultdict(int)
         site = get_site_promise(self.context).get()
-        if is_reservation_enabled(site.settings):  # type: ignore
+        if is_reservation_enabled(site.settings):
             # Can't do second annotation on same queryset because it made
             # available_quantity annotated value incorrect thanks to how
             # Django's ORM builds SQLs with annotations
@@ -369,7 +367,7 @@ class StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(
         # a handful of unique countries but may access thousands of product variants
         # so it's cheaper to execute one query per country.
         variants_by_country_and_channel: DefaultDict[
-            CountryCode, List[int]
+            Tuple[CountryCode, str], List[int]
         ] = defaultdict(list)
         for variant_id, country_code, channel_slug in keys:
             variants_by_country_and_channel[(country_code, channel_slug)].append(
@@ -378,7 +376,7 @@ class StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(
 
         # For each country code execute a single query for all product variants.
         stocks_by_variant_and_country: DefaultDict[
-            VariantIdCountryCodeChannelSlug, Iterable[Stock]
+            VariantIdCountryCodeChannelSlug, List[Stock]
         ] = defaultdict(list)
         for key, variant_ids in variants_by_country_and_channel.items():
             country_code, channel_slug = key
@@ -481,7 +479,7 @@ class ActiveReservationsByCheckoutLineIdLoader(DataLoader):
             Reservation.objects.using(self.database_connection_name)
             .filter(checkout_line_id__in=keys)
             .not_expired()
-        )  # type: ignore
+        )
         for reservation in queryset:
             reservations_by_checkout_line[reservation.checkout_line_id].append(
                 reservation
@@ -490,7 +488,7 @@ class ActiveReservationsByCheckoutLineIdLoader(DataLoader):
             PreorderReservation.objects.using(self.database_connection_name)
             .filter(checkout_line_id__in=keys)
             .not_expired()
-        )  # type: ignore
+        )
         for reservation in queryset:
             reservations_by_checkout_line[reservation.checkout_line_id].append(
                 reservation

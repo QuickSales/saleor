@@ -2,7 +2,6 @@ import graphene
 from graphene import relay
 
 from ...core.permissions import CheckoutPermissions, ShippingPermissions
-from ...core.tracing import traced_resolver
 from ...core.weight import convert_weight_to_default_weight_unit
 from ...product import models as product_models
 from ...shipping import models
@@ -25,6 +24,7 @@ from ..core.descriptions import (
     RICH_CONTENT,
 )
 from ..core.fields import ConnectionField, JSONString, PermissionsField
+from ..core.tracing import traced_resolver
 from ..core.types import (
     CountryDisplay,
     ModelObjectType,
@@ -51,7 +51,9 @@ from .dataloaders import (
 from .enums import PostalCodeRuleInclusionTypeEnum, ShippingMethodTypeEnum
 
 
-class ShippingMethodChannelListing(ModelObjectType):
+class ShippingMethodChannelListing(
+    ModelObjectType[models.ShippingMethodChannelListing]
+):
     id = graphene.GlobalID(required=True)
     channel = graphene.Field(Channel, required=True)
     maximum_order_price = graphene.Field(Money)
@@ -75,7 +77,9 @@ class ShippingMethodChannelListing(ModelObjectType):
             return root.minimum_order_price
 
 
-class ShippingMethodPostalCodeRule(ModelObjectType):
+class ShippingMethodPostalCodeRule(
+    ModelObjectType[models.ShippingMethodPostalCodeRule]
+):
     start = graphene.String(description="Start address range.")
     end = graphene.String(description="End address range.")
     inclusion_type = PostalCodeRuleInclusionTypeEnum(
@@ -229,7 +233,7 @@ class ShippingMethodType(ChannelContextTypeWithMetadataForObjectType):
             qs = product_models.Product.objects.none()
         else:
             qs = ChannelQsContext(
-                qs=root.node.excluded_products.all(), channel_slug=None  # type: ignore
+                qs=root.node.excluded_products.all(), channel_slug=None
             )
 
         return create_connection_slice(qs, info, kwargs, ProductCountableConnection)
@@ -243,7 +247,7 @@ class ShippingMethodType(ChannelContextTypeWithMetadataForObjectType):
         )
 
 
-class ShippingZone(ChannelContextTypeWithMetadata, ModelObjectType):
+class ShippingZone(ChannelContextTypeWithMetadata[models.ShippingZone]):
     id = graphene.GlobalID(required=True)
     name = graphene.String(required=True)
     default = graphene.Boolean(required=True)

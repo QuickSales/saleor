@@ -217,7 +217,7 @@ class AvataxPlugin(BasePlugin):
                 prices_entered_with_tax=prices_entered_with_tax,
                 # for some cases we will need a base_value but no need to call it for
                 # each line
-                base_value=SimpleLazyObject(  # type:ignore
+                base_value=SimpleLazyObject(
                     lambda: base_calculations.calculate_base_line_total_price(
                         line, checkout_info.channel, discounts
                     )

@@ -110,7 +110,7 @@ def api_post_request(
             "Unable to decode the response from Avatax. Response: %s", content
         )
         return {}
-    return json_response  # type: ignore
+    return json_response
 
 
 def api_get_request(
@@ -124,7 +124,7 @@ def api_get_request(
         response = requests.get(url, auth=auth, timeout=TIMEOUT)
         json_response = response.json()
         logger.debug("[GET] Hit to %s", url)
-        if "error" in json_response:  # type: ignore
+        if "error" in json_response:
             logger.error("Avatax response contains errors %s", json_response)
         return json_response
     except requests.exceptions.RequestException:
@@ -170,7 +170,7 @@ def _validate_order(order: "Order") -> bool:
     if not valid_address_details:
         return False
     if shipping_required and isinstance(delivery_method, ShippingMethod):
-        channel_listing = delivery_method.channel_listings.filter(  # type: ignore
+        channel_listing = delivery_method.channel_listings.filter(
             channel_id=order.channel_id
         ).first()
         if not channel_listing:

@@ -57,7 +57,7 @@ class ProductNotPublished(Exception):
 
 
 class PermissionDenied(Exception):
-    def __init__(self, message=None, *, permissions: Iterable[Enum] = None):
+    def __init__(self, message=None, *, permissions: Optional[Iterable[Enum]] = None):
         if not message:
             if permissions:
                 permission_list = ", ".join(p.name for p in permissions)

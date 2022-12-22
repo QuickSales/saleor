@@ -216,7 +216,7 @@ def check_stock_quantity_bulk(
     global_quantity_limit: Optional[int],
     delivery_method_info: Optional["DeliveryMethodBase"] = None,
     additional_filter_lookup: Optional[Dict[str, Any]] = None,
-    existing_lines: Iterable["CheckoutLineInfo"] = None,
+    existing_lines: Optional[Iterable["CheckoutLineInfo"]] = None,
     replace=False,
     check_reservations: bool = False,
 ):
@@ -271,9 +271,7 @@ def check_stock_quantity_bulk(
             quantity += variants_quantities.get(variant.pk, 0)
 
         stocks = variant_stocks.get(variant.pk, [])
-        available_quantity = sum(
-            [stock.available_quantity for stock in stocks]  # type: ignore
-        )
+        available_quantity = sum([stock.available_quantity for stock in stocks])
         available_quantity = max(
             available_quantity - variant_reservations[variant.pk], 0
         )
@@ -525,7 +523,7 @@ def get_reserved_stock_quantity(
         .aggregate(
             quantity_reserved=Coalesce(Sum("quantity_reserved"), 0),
         )
-    )  # type: ignore
+    )
 
     return result["quantity_reserved"]
 
@@ -548,7 +546,7 @@ def get_reserved_stock_quantity_bulk(
         .annotate(
             quantity_reserved=Coalesce(Sum("quantity_reserved"), 0),
         )
-    )  # type: ignore
+    )
 
     stocks_variants = {stock.id: stock.product_variant_id for stock in stocks}
     for stock_reservations in result:

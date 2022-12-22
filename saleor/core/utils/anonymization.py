@@ -28,7 +28,7 @@ def generate_fake_address() -> "Address":
     """
     fake_address = create_address(save=False)
     # Prevent accidental saving of the instance
-    fake_address.save = _fake_save  # type: ignore
+    fake_address.save = _fake_save
     return fake_address
 
 
@@ -39,7 +39,7 @@ def generate_fake_user() -> "User":
     """
     fake_user = create_fake_user(user_password=None, save=False)
     # Prevent accidental saving of the instance
-    fake_user.save = _fake_save  # type: ignore
+    fake_user.save = _fake_save
     return fake_user
 
 

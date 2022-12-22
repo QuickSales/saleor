@@ -23,6 +23,7 @@ from . import DiscountValueType, OrderDiscountType, VoucherType
 
 if TYPE_CHECKING:
     from ..account.models import User
+    from ..order.models import Order
 
 
 class NotApplicable(ValueError):
@@ -360,13 +361,13 @@ class OrderDiscount(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
     old_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    order = models.ForeignKey(
+    order: models.ForeignKey["Order", "Order"] = models.ForeignKey(
         "order.Order",
         related_name="discounts",
         blank=True,
         null=True,
         on_delete=models.CASCADE,
-    )
+    )  # type: ignore[assignment]
     type = models.CharField(
         max_length=10,
         choices=OrderDiscountType.CHOICES,

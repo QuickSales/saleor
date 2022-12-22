@@ -18,6 +18,7 @@ from ...attribute.mutations import (
 )
 from ...attribute.types import Attribute
 from ...channel import ChannelContext
+from ...core import ResolveInfo
 from ...core.descriptions import ADDED_IN_31
 from ...core.inputs import ReorderInput
 from ...core.mutations import BaseMutation
@@ -81,7 +82,7 @@ class VariantAssignmentValidationMixin:
                     "variant selection. Supported types are: "
                     f"{AttributeInputType.ALLOWED_IN_VARIANT_SELECTION}."
                 ),
-                code=ProductErrorCode.ATTRIBUTE_CANNOT_BE_ASSIGNED,
+                code=ProductErrorCode.ATTRIBUTE_CANNOT_BE_ASSIGNED.value,
                 params={"attributes": invalid_attr_ids},
             )
             errors["operations"].append(error)
@@ -108,7 +109,9 @@ class ProductAttributeAssign(BaseMutation, VariantAssignmentValidationMixin):
         permissions = (ProductTypePermissions.MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES,)
 
     @classmethod
-    def get_operations(cls, info, operations: List[ProductAttributeAssignInput]):
+    def get_operations(
+        cls, info: ResolveInfo, operations: List[ProductAttributeAssignInput]
+    ):
         """Resolve all passed global ids into integer PKs of the Attribute type."""
         product_attrs_pks = []
         variant_attrs_pks = []
@@ -172,7 +175,7 @@ class ProductAttributeAssign(BaseMutation, VariantAssignmentValidationMixin):
             ]
             error = ValidationError(
                 (f"{msg} have already been assigned to this product type."),
-                code=ProductErrorCode.ATTRIBUTE_ALREADY_ASSIGNED,
+                code=ProductErrorCode.ATTRIBUTE_ALREADY_ASSIGNED.value,
                 params={"attributes": invalid_attr_ids},
             )
             errors["operations"].append(error)
@@ -188,7 +191,7 @@ class ProductAttributeAssign(BaseMutation, VariantAssignmentValidationMixin):
                 )
                 error = ValidationError(
                     msg,
-                    code=ProductErrorCode.ATTRIBUTE_CANNOT_BE_ASSIGNED,
+                    code=ProductErrorCode.ATTRIBUTE_CANNOT_BE_ASSIGNED.value,
                     params={"attributes": attr_pk},
                 )
                 errors["operations"].append(error)
@@ -206,7 +209,7 @@ class ProductAttributeAssign(BaseMutation, VariantAssignmentValidationMixin):
             ]
             error = ValidationError(
                 "Cannot assign variant only attributes.",
-                code=ProductErrorCode.ATTRIBUTE_CANNOT_BE_ASSIGNED,
+                code=ProductErrorCode.ATTRIBUTE_CANNOT_BE_ASSIGNED.value,
                 params={"attributes": restricted_attr_ids},
             )
             errors["operations"].append(error)
@@ -229,7 +232,7 @@ class ProductAttributeAssign(BaseMutation, VariantAssignmentValidationMixin):
             ]
             error = ValidationError(
                 "Attribute doesn't exist.",
-                code=ProductErrorCode.NOT_FOUND,
+                code=ProductErrorCode.NOT_FOUND.value,
                 params={"attributes": list(invalid_attrs)},
             )
             errors["operations"].append(error)
@@ -265,7 +268,7 @@ class ProductAttributeAssign(BaseMutation, VariantAssignmentValidationMixin):
                 )
 
     @classmethod
-    def perform_mutation(cls, _root, info, **data):
+    def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
         product_type_id: str = data["product_type_id"]
         operations: List[ProductAttributeAssignInput] = data["operations"]
         # Retrieve the requested product type
@@ -326,7 +329,7 @@ class ProductAttributeUnassign(BaseMutation):
         getattr(product_type, field).remove(*pks)
 
     @classmethod
-    def perform_mutation(cls, _root, info, **data):
+    def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
         product_type_id: str = data["product_type_id"]
         attribute_ids: List[str] = data["attribute_ids"]
         # Retrieve the requested product type
@@ -377,7 +380,7 @@ class ProductAttributeAssignmentUpdate(BaseMutation, VariantAssignmentValidation
 
     @classmethod
     def get_operations(
-        cls, info, operations: List[ProductAttributeAssignmentUpdateInput]
+        cls, info: ResolveInfo, operations: List[ProductAttributeAssignmentUpdateInput]
     ):
         variant_attrs_pks = []
         for operation in operations:
@@ -412,7 +415,7 @@ class ProductAttributeAssignmentUpdate(BaseMutation, VariantAssignmentValidation
             ]
             error = ValidationError(
                 "Attribute is not assigned to product type.",
-                code=ProductErrorCode.NOT_FOUND,
+                code=ProductErrorCode.NOT_FOUND.value,
                 params={
                     "attributes": invalid_attrs,
                 },
@@ -436,7 +439,7 @@ class ProductAttributeAssignmentUpdate(BaseMutation, VariantAssignmentValidation
             ]
             error = ValidationError(
                 "Attribute is not assigned to product variant.",
-                code=ProductErrorCode.NOT_FOUND,
+                code=ProductErrorCode.NOT_FOUND.value,
                 params={
                     "attributes": invalid_attrs,
                 },
@@ -454,7 +457,7 @@ class ProductAttributeAssignmentUpdate(BaseMutation, VariantAssignmentValidation
         if invalid_ids:
             error = ValidationError(
                 "Attribute ids should be unique within operations.",
-                code=ProductErrorCode.INVALID,
+                code=ProductErrorCode.INVALID.value,
                 params={"attributes": invalid_ids},
             )
             errors["operations"].append(error)
@@ -515,7 +518,7 @@ class ProductAttributeAssignmentUpdate(BaseMutation, VariantAssignmentValidation
         ).update(variant_selection=False)
 
     @classmethod
-    def perform_mutation(cls, _root, info, **data):
+    def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
         product_type_id: str = data["product_type_id"]
         operations: List[ProductAttributeAssignmentUpdateInput] = data["operations"]
         # Retrieve the requested product type
@@ -569,7 +572,9 @@ class ProductTypeReorderAttributes(BaseReorderAttributesMutation):
         )
 
     @classmethod
-    def perform_mutation(cls, _root, info, product_type_id, type, moves):
+    def perform_mutation(  # type: ignore[override]
+        cls, _root, _info: ResolveInfo, /, *, moves, product_type_id, type
+    ):
         pk = cls.get_global_id_or_error(
             product_type_id, only_type=ProductType, field="product_type_id"
         )
@@ -588,7 +593,7 @@ class ProductTypeReorderAttributes(BaseReorderAttributesMutation):
                 {
                     "product_type_id": ValidationError(
                         (f"Couldn't resolve to a product type: {product_type_id}"),
-                        code=ProductErrorCode.NOT_FOUND,
+                        code=ProductErrorCode.NOT_FOUND.value,
                     )
                 }
             )
@@ -632,7 +637,7 @@ class ProductReorderAttributeValues(BaseReorderAttributeValuesMutation):
         )
 
     @classmethod
-    def perform_mutation(cls, _root, info, **data):
+    def perform_mutation(cls, _root, _info: ResolveInfo, /, **data):
         product_id = data["product_id"]
         product = cls.perform(
             product_id, "product", data, "productvalueassignment", ProductErrorCode
@@ -688,7 +693,7 @@ class ProductVariantReorderAttributeValues(BaseReorderAttributeValuesMutation):
         )
 
     @classmethod
-    def perform_mutation(cls, _root, info, **data):
+    def perform_mutation(cls, _root, _info: ResolveInfo, /, **data):
         variant_id = data["variant_id"]
         variant = cls.perform(
             variant_id, "variant", data, "variantvalueassignment", ProductErrorCode

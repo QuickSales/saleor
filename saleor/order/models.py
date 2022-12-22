@@ -1,7 +1,7 @@
 from decimal import Decimal
 from operator import attrgetter
 from re import match
-from typing import Optional
+from typing import List, Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -9,8 +9,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.core.validators import MinValueValidator
 from django.db import connection, models
-from django.db.models import JSONField  # type: ignore
-from django.db.models import F, Max
+from django.db.models import F, JSONField, Max
 from django.db.models.expressions import Exists, OuterRef
 from django.utils.timezone import now
 from django_measurement.models import MeasurementField
@@ -303,7 +302,7 @@ class Order(ModelWithMetadata, ModelWithExternalReference):
     customer_note = models.TextField(blank=True, default="")
     weight = MeasurementField(
         measurement=Weight,
-        unit_choices=WeightUnits.CHOICES,  # type: ignore
+        unit_choices=WeightUnits.CHOICES,
         default=zero_weight,
     )
     redirect_url = models.URLField(blank=True, null=True)
@@ -359,11 +358,13 @@ class Order(ModelWithMetadata, ModelWithExternalReference):
     def __str__(self):
         return "#%d" % (self.id,)
 
-    def get_last_payment(self):
+    def get_last_payment(self) -> Optional[Payment]:
         # Skipping a partial payment is a temporary workaround for storing a basic data
         # about partial payment from Adyen plugin. This is something that will removed
         # in 3.1 by introducing a partial payments feature.
-        payments = [payment for payment in self.payments.all() if not payment.partial]
+        payments: List[Payment] = [
+            payment for payment in self.payments.all() if not payment.partial
+        ]
         return max(payments, default=None, key=attrgetter("pk"))
 
     def is_pre_authorized(self):

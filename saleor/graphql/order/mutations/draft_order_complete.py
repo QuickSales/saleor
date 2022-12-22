@@ -1,3 +1,5 @@
+from typing import cast
+
 import graphene
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -18,6 +20,7 @@ from ....order.utils import get_order_country, update_order_display_gross_prices
 from ....warehouse.management import allocate_preorders, allocate_stocks
 from ....warehouse.reservations import is_reservation_enabled
 from ...app.dataloaders import get_app_promise
+from ...core import ResolveInfo
 from ...core.mutations import BaseMutation
 from ...core.types import OrderError
 from ...plugins.dataloaders import get_plugin_manager_promise
@@ -65,7 +68,12 @@ class DraftOrderComplete(BaseMutation):
             )
 
     @classmethod
-    def perform_mutation(cls, _root, info, id):
+    def perform_mutation(  # type: ignore[override]
+        cls, _root, info: ResolveInfo, /, *, id: str
+    ):
+        user = info.context.user
+        user = cast(User, user)
+
         manager = get_plugin_manager_promise(info.context).get()
         order = cls.get_node_or_error(
             info,
@@ -98,33 +106,40 @@ class DraftOrderComplete(BaseMutation):
             channel = order.channel
             order_lines_info = []
             for line in order.lines.all():
-                if line.variant.track_inventory or line.variant.is_preorder_active():
-                    line_data = OrderLineInfo(
-                        line=line, quantity=line.quantity, variant=line.variant
-                    )
-                    order_lines_info.append(line_data)
-                    site = get_site_promise(info.context).get()
-                    try:
-                        with traced_atomic_transaction():
-                            allocate_stocks(
-                                [line_data],
-                                country,
-                                channel,
-                                manager,
-                                check_reservations=is_reservation_enabled(
-                                    site.settings
-                                ),
+                if line.variant:
+                    # we only care about stock for variants that still exist
+                    if (
+                        line.variant.track_inventory
+                        or line.variant.is_preorder_active()
+                    ):
+                        line_data = OrderLineInfo(
+                            line=line, quantity=line.quantity, variant=line.variant
+                        )
+                        order_lines_info.append(line_data)
+                        site = get_site_promise(info.context).get()
+                        try:
+                            with traced_atomic_transaction():
+                                allocate_stocks(
+                                    [line_data],
+                                    country,
+                                    channel,
+                                    manager,
+                                    check_reservations=is_reservation_enabled(
+                                        site.settings
+                                    ),
+                                )
+                                allocate_preorders(
+                                    [line_data],
+                                    channel.slug,
+                                    check_reservations=is_reservation_enabled(
+                                        site.settings
+                                    ),
+                                )
+                        except InsufficientStock as exc:
+                            errors = prepare_insufficient_stock_order_validation_errors(
+                                exc
                             )
-                            allocate_preorders(
-                                [line_data],
-                                channel.slug,
-                                check_reservations=is_reservation_enabled(
-                                    site.settings
-                                ),
-                            )
-                    except InsufficientStock as exc:
-                        errors = prepare_insufficient_stock_order_validation_errors(exc)
-                        raise ValidationError({"lines": errors})
+                            raise ValidationError({"lines": errors})
 
             order_info = OrderInfo(
                 order=order,
@@ -137,7 +152,7 @@ class DraftOrderComplete(BaseMutation):
             transaction.on_commit(
                 lambda: order_created(
                     order_info=order_info,
-                    user=info.context.user,
+                    user=user,
                     app=app,
                     manager=manager,
                     from_draft=True,

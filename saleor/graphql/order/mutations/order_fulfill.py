@@ -10,6 +10,7 @@ from ....order import models as order_models
 from ....order.actions import create_fulfillments
 from ....order.error_codes import OrderErrorCode
 from ...app.dataloaders import get_app_promise
+from ...core import ResolveInfo
 from ...core.descriptions import ADDED_IN_36
 from ...core.mutations import BaseMutation
 from ...core.types import NonNullList, OrderError
@@ -111,7 +112,7 @@ class OrderFulfill(BaseMutation):
                     {
                         "order_line_id": ValidationError(
                             msg,
-                            code=OrderErrorCode.FULFILL_ORDER_LINE,
+                            code=OrderErrorCode.FULFILL_ORDER_LINE.value,
                             params={"order_lines": [order_line_global_id]},
                         )
                     }
@@ -126,7 +127,7 @@ class OrderFulfill(BaseMutation):
                     {
                         "warehouse": ValidationError(
                             "Duplicated warehouse ID.",
-                            code=OrderErrorCode.DUPLICATED_INPUT_ITEM,
+                            code=OrderErrorCode.DUPLICATED_INPUT_ITEM.value,
                             params={"warehouse": duplicates.pop()},
                         )
                     }
@@ -140,7 +141,7 @@ class OrderFulfill(BaseMutation):
                 {
                     "orderLineId": ValidationError(
                         "Duplicated order line ID.",
-                        code=OrderErrorCode.DUPLICATED_INPUT_ITEM,
+                        code=OrderErrorCode.DUPLICATED_INPUT_ITEM.value,
                         params={"order_lines": [duplicates.pop()]},
                     )
                 }
@@ -157,7 +158,7 @@ class OrderFulfill(BaseMutation):
                     {
                         "order_line_id": ValidationError(
                             "Can not fulfill preorder variant.",
-                            code=OrderErrorCode.FULFILL_ORDER_LINE,
+                            code=OrderErrorCode.FULFILL_ORDER_LINE.value,
                             params={"order_lines": [order_line_global_id]},
                         )
                     }
@@ -171,13 +172,13 @@ class OrderFulfill(BaseMutation):
                 {
                     "lines": ValidationError(
                         "Total quantity must be larger than 0.",
-                        code=OrderErrorCode.ZERO_QUANTITY,
+                        code=OrderErrorCode.ZERO_QUANTITY.value,
                     )
                 }
             )
 
     @classmethod
-    def clean_input(cls, info, order, data, site):
+    def clean_input(cls, info: ResolveInfo, order, data, site):
         if not order.is_fully_paid() and (
             site.settings.fulfillment_auto_approve
             and not site.settings.fulfillment_allow_unpaid
@@ -231,7 +232,9 @@ class OrderFulfill(BaseMutation):
         return data
 
     @classmethod
-    def perform_mutation(cls, _root, info, order, **data):
+    def perform_mutation(  # type: ignore[override]
+        cls, _root, info: ResolveInfo, /, *, input, order=None
+    ):
         order = cls.get_node_or_error(
             info,
             order,
@@ -239,9 +242,8 @@ class OrderFulfill(BaseMutation):
             only_type=Order,
             qs=order_models.Order.objects.prefetch_related("lines__variant"),
         )
-        data = data.get("input")
         site = get_site_promise(info.context).get()
-        cleaned_input = cls.clean_input(info, order, data, site=site)
+        cleaned_input = cls.clean_input(info, order, input, site=site)
 
         context = info.context
         user = context.user

@@ -15,7 +15,6 @@ from ....core.permissions import (
     ProductPermissions,
     has_one_of_permissions,
 )
-from ....core.tracing import traced_resolver
 from ....core.utils import build_absolute_uri, get_currency_for_country
 from ....core.weight import convert_weight_to_default_weight_unit
 from ....product import models
@@ -70,6 +69,7 @@ from ...core.fields import (
     PermissionsField,
 )
 from ...core.scalars import Date
+from ...core.tracing import traced_resolver
 from ...core.types import (
     Image,
     ModelObjectType,
@@ -244,7 +244,7 @@ class PreorderData(graphene.ObjectType):
 
 
 @federated_entity("id channel")
-class ProductVariant(ChannelContextTypeWithMetadata, ModelObjectType):
+class ProductVariant(ChannelContextTypeWithMetadata[models.ProductVariant]):
     id = graphene.GlobalID(required=True)
     name = graphene.String(required=True)
     sku = graphene.String()
@@ -807,7 +807,7 @@ class ProductVariantCountableConnection(CountableConnection):
 
 
 @federated_entity("id channel")
-class Product(ChannelContextTypeWithMetadata, ModelObjectType):
+class Product(ChannelContextTypeWithMetadata[models.Product]):
     id = graphene.GlobalID(required=True)
     seo_title = graphene.String()
     seo_description = graphene.String()
@@ -1541,7 +1541,7 @@ class ProductCountableConnection(CountableConnection):
 
 
 @federated_entity("id")
-class ProductType(ModelObjectType):
+class ProductType(ModelObjectType[models.ProductType]):
     id = graphene.GlobalID(required=True)
     name = graphene.String(required=True)
     slug = graphene.String(required=True)
@@ -1740,7 +1740,7 @@ class ProductTypeCountableConnection(CountableConnection):
 
 
 @federated_entity("id")
-class ProductMedia(ModelObjectType):
+class ProductMedia(ModelObjectType[models.ProductMedia]):
     id = graphene.GlobalID(required=True)
     sort_order = graphene.Int()
     alt = graphene.String(required=True)

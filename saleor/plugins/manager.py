@@ -15,11 +15,10 @@ from typing import (
 
 import opentracing
 from django.conf import settings
-from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, HttpResponseNotFound
 from django.utils.module_loading import import_string
 from graphene import Mutation
-from graphql import GraphQLError, ResolveInfo
+from graphql import GraphQLError
 from graphql.execution import ExecutionResult
 from prices import TaxedMoney
 
@@ -30,6 +29,7 @@ from ..core.payments import PaymentInterface
 from ..core.prices import quantize_price
 from ..core.taxes import TaxData, TaxType, zero_money, zero_taxed_money
 from ..discount import DiscountInfo
+from ..graphql.core import ResolveInfo, SaleorContext
 from ..order import base_calculations as base_order_calculations
 from ..order.interface import OrderTaxedPricesData
 from ..tax.utils import calculate_tax_rate
@@ -1464,7 +1464,7 @@ class PluginsManager(PaymentInterface):
         return None
 
     def webhook_endpoint_without_channel(
-        self, request: WSGIRequest, plugin_id: str
+        self, request: SaleorContext, plugin_id: str
     ) -> HttpResponse:
         # This should be removed in 3.0.0-a.25 as we want to give a possibility to have
         # no downtime between RCs
@@ -1482,7 +1482,7 @@ class PluginsManager(PaymentInterface):
         )
 
     def webhook(
-        self, request: WSGIRequest, plugin_id: str, channel_slug: Optional[str] = None
+        self, request: SaleorContext, plugin_id: str, channel_slug: Optional[str] = None
     ) -> HttpResponse:
         split_path = request.path.split(plugin_id, maxsplit=1)
         path = None
@@ -1529,8 +1529,8 @@ class PluginsManager(PaymentInterface):
         )
 
     def external_obtain_access_tokens(
-        self, plugin_id: str, data: dict, request: WSGIRequest
-    ) -> Optional["ExternalAccessTokens"]:
+        self, plugin_id: str, data: dict, request: SaleorContext
+    ) -> ExternalAccessTokens:
         """Obtain access tokens from authentication plugin."""
         default_value = ExternalAccessTokens()
         plugin = self.get_plugin(plugin_id)
@@ -1539,7 +1539,7 @@ class PluginsManager(PaymentInterface):
         )
 
     def external_authentication_url(
-        self, plugin_id: str, data: dict, request: WSGIRequest
+        self, plugin_id: str, data: dict, request: SaleorContext
     ) -> dict:
         """Handle authentication request."""
         default_value = {}  # type: ignore
@@ -1549,8 +1549,8 @@ class PluginsManager(PaymentInterface):
         )
 
     def external_refresh(
-        self, plugin_id: str, data: dict, request: WSGIRequest
-    ) -> Optional["ExternalAccessTokens"]:
+        self, plugin_id: str, data: dict, request: SaleorContext
+    ) -> ExternalAccessTokens:
         """Handle authentication refresh request."""
         default_value = ExternalAccessTokens()
         plugin = self.get_plugin(plugin_id)
@@ -1558,12 +1558,14 @@ class PluginsManager(PaymentInterface):
             plugin, "external_refresh", default_value, data, request
         )
 
-    def authenticate_user(self, request: WSGIRequest) -> Optional["User"]:
+    def authenticate_user(self, request: SaleorContext) -> Optional["User"]:
         """Authenticate user which should be assigned to the request."""
         default_value = None
         return self.__run_method_on_plugins("authenticate_user", default_value, request)
 
-    def external_logout(self, plugin_id: str, data: dict, request: WSGIRequest) -> dict:
+    def external_logout(
+        self, plugin_id: str, data: dict, request: SaleorContext
+    ) -> dict:
         """Logout the user."""
         default_value: Dict[str, str] = {}
         plugin = self.get_plugin(plugin_id)
@@ -1572,7 +1574,7 @@ class PluginsManager(PaymentInterface):
         )
 
     def external_verify(
-        self, plugin_id: str, data: dict, request: WSGIRequest
+        self, plugin_id: str, data: dict, request: SaleorContext
     ) -> Tuple[Optional["User"], dict]:
         """Verify the provided authentication data."""
         default_data: Dict[str, str] = dict()

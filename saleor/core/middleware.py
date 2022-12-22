@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Union
 
 from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
-from django.utils import timezone
 from django.utils.translation import get_language
 
 from . import analytics
@@ -39,14 +38,6 @@ def google_analytics(get_response):
         return get_response(request)
 
     return _google_analytics_middleware
-
-
-def request_time(get_response):
-    def _stamp_request(request):
-        request.request_time = timezone.now()
-        return get_response(request)
-
-    return _stamp_request
 
 
 def jwt_refresh_token_middleware(get_response):

@@ -178,7 +178,7 @@ def _prepare_stock_to_reserved_quantity_map(
             .annotate(
                 quantity_reserved=Coalesce(Sum("quantity_reserved"), 0),
             )
-        )  # type: ignore
+        )
         for reservation in quantity_reservation:
             quantity_reservation_for_stocks[reservation["stock"]] += reservation[
                 "quantity_reserved"
@@ -267,9 +267,7 @@ def _create_allocations(
 
     if not quantity_allocated == quantity:
         insufficient_stock.append(
-            InsufficientStockData(
-                variant=line_info.variant, order_line=line_info.line  # type: ignore
-            )
+            InsufficientStockData(variant=line_info.variant, order_line=line_info.line)
         )
         return insufficient_stock, []
 
@@ -551,7 +549,7 @@ def _decrease_stocks_quantity(
         if is_stock_exceeded and not allow_stock_to_be_exceeded:
             insufficient_stocks.append(
                 InsufficientStockData(
-                    variant=variant,  # type: ignore
+                    variant=variant,
                     order_line=line_info.line,
                     warehouse_pk=warehouse_pk,
                 )
@@ -666,7 +664,7 @@ def allocate_preorders(
             .exclude_checkout_lines(checkout_lines)
             .values("product_variant_channel_listing")
             .annotate(quantity_reserved_sum=Sum("quantity_reserved"))
-        )  # type: ignore
+        )
         listings_reservations: Dict = defaultdict(int)
         for reservation in quantity_reservation_list:
             listings_reservations[

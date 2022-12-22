@@ -125,7 +125,7 @@ def generate_unique_slug(
         lookup.update(additional_search_lookup)
 
     slug_values = (
-        ModelClass._default_manager.filter(**lookup)  # type: ignore
+        ModelClass._default_manager.filter(**lookup)
         .exclude(pk=instance.pk)
         .values_list(slug_field_name, flat=True)
     )

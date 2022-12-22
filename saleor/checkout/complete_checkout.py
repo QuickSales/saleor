@@ -290,7 +290,7 @@ def _create_line_for_order(
     else:
         tax_class = product.product_type.tax_class
 
-    line = OrderLine(
+    line = OrderLine(  # type: ignore[misc]
         product_name=product_name,
         variant_name=variant_name,
         translated_product_name=translated_product_name,
@@ -301,14 +301,14 @@ def _create_line_for_order(
         is_gift_card=variant.is_gift_card(),
         quantity=quantity,
         variant=variant,
-        unit_price=unit_price,  # type: ignore
-        undiscounted_unit_price=undiscounted_unit_price,  # type: ignore
-        undiscounted_total_price=undiscounted_total_price,  # type: ignore
-        total_price=total_line_price,  # type: ignore
+        unit_price=unit_price,
+        undiscounted_unit_price=undiscounted_unit_price,
+        undiscounted_total_price=undiscounted_total_price,
+        total_price=total_line_price,
         tax_rate=tax_rate,
         sale_id=graphene.Node.to_global_id("Sale", sale_id) if sale_id else None,
         voucher_code=voucher_code,
-        unit_discount=discount_amount,  # type: ignore
+        unit_discount=discount_amount,
         unit_discount_reason=unit_discount_reason,
         unit_discount_value=discount_amount.amount,  # we store value as fixed discount
         base_unit_price=base_unit_price,
@@ -854,7 +854,7 @@ def complete_checkout_post_payment_part(
 
     if payment and txn:
         if txn.customer_id and user:
-            store_customer_id(user, payment.gateway, txn.customer_id)  # type:ignore
+            store_customer_id(user, payment.gateway, txn.customer_id)
 
         action_required = txn.action_required
         if action_required:
@@ -870,7 +870,7 @@ def complete_checkout_post_payment_part(
                 checkout_info=checkout_info,
                 checkout_lines=lines,
                 order_data=order_data,
-                user=user,  # type: ignore
+                user=user,
                 app=app,
                 manager=manager,
                 site_settings=site_settings,
@@ -1120,8 +1120,8 @@ def _create_order_from_checkout(
         status=status,
         language_code=checkout_info.checkout.language_code,
         tracking_client_id=tracking_code or "",
-        total=taxed_total,  # type: ignore
-        undiscounted_total=undiscounted_total,  # type: ignore
+        total=taxed_total,
+        undiscounted_total=undiscounted_total,
         shipping_tax_rate=shipping_tax_rate,
         voucher=voucher,
         checkout_token=str(checkout_info.checkout.token),

@@ -458,9 +458,10 @@ def update_checkout_info_delivery_method_info(
                 shipping_channel_listing = listing
                 break
 
-        delivery_method = convert_to_shipping_method_data(
-            shipping_method, shipping_channel_listing
-        )
+        if shipping_channel_listing:
+            delivery_method = convert_to_shipping_method_data(
+                shipping_method, shipping_channel_listing
+            )
 
     elif external_shipping_method_id := get_external_shipping_id(checkout):
         # A local function is used to delay evaluation

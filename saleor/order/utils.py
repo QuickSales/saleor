@@ -589,8 +589,8 @@ def get_all_shipping_methods_for_order(
 
     for method in shipping_methods:
         listing = listing_map.get(method.id)
-        shipping_method_data = convert_to_shipping_method_data(method, listing)
-        if shipping_method_data:
+        if listing:
+            shipping_method_data = convert_to_shipping_method_data(method, listing)
             all_methods.append(shipping_method_data)
     return all_methods
 
@@ -889,11 +889,15 @@ def update_order_charge_status(order: Order):
 
 def _update_order_total_charged(order: Order):
     order.total_charged_amount = (
-        sum(order.payments.values_list("captured_amount", flat=True))  # type: ignore
+        sum(
+            order.payments.values_list(  # type: ignore[arg-type]
+                "captured_amount", flat=True
+            )
+        )
         or 0
     )
-    order.total_charged_amount += sum(  # type: ignore
-        order.payment_transactions.values_list(  # type: ignore
+    order.total_charged_amount += sum(
+        order.payment_transactions.values_list(  # type: ignore[arg-type]
             "charged_value", flat=True
         )
     )

@@ -2,7 +2,7 @@ import re
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 import graphene
 from django.core.exceptions import ValidationError
@@ -180,7 +180,9 @@ class AttributeAssignmentMixin:
         :raises ValidationError: contain the message.
         :return: The resolved data
         """
-        error_class = PageErrorCode if is_page_attributes else ProductErrorCode
+        error_class: Union[Type[PageErrorCode], Type[ProductErrorCode]] = (
+            PageErrorCode if is_page_attributes else ProductErrorCode
+        )
 
         # Mapping to associate the input values back to the resolved attribute nodes
         pks = {}
@@ -192,7 +194,7 @@ class AttributeAssignmentMixin:
             if global_id is None:
                 raise ValidationError(
                     "The attribute ID is required.",
-                    code=error_class.REQUIRED.value,  # type: ignore
+                    code=error_class.REQUIRED.value,
                 )
             values = AttrValuesInput(
                 global_id=global_id,
@@ -230,7 +232,7 @@ class AttributeAssignmentMixin:
                 "Provided references are invalid. Some of the nodes "
                 "do not exist or are different types than types defined "
                 "in attribute entity type.",
-                code=error_class.INVALID.value,  # type: ignore
+                code=error_class.INVALID.value,
             )
 
         cls._validate_attributes_input(
@@ -246,7 +248,7 @@ class AttributeAssignmentMixin:
     def _clean_file_url(file_url: Optional[str], error_class):
         # extract storage path from file URL
         storage_root_url = get_default_storage_root_url()
-        if file_url and not file_url.startswith(storage_root_url):  # type: ignore
+        if file_url and not file_url.startswith(storage_root_url):
             raise ValidationError(
                 "The file_url must be the path to the default storage.",
                 code=error_class.INVALID.value,
@@ -551,7 +553,7 @@ class AttributeAssignmentMixin:
         if not attr_values.references or not attribute.entity_type:
             return tuple()
 
-        entity_data = cls.ENTITY_TYPE_MAPPING[attribute.entity_type]  # type: ignore
+        entity_data = cls.ENTITY_TYPE_MAPPING[attribute.entity_type]
         field_name = entity_data.name_field
         get_or_create = attribute.values.get_or_create
 
@@ -598,7 +600,7 @@ class AttributeAssignmentMixin:
                 name=name,
                 content_type=attr_value.content_type,
             )
-            value.slug = generate_unique_slug(value, name)  # type: ignore
+            value.slug = generate_unique_slug(value, name)
             value.save()
         return (value,)
 
@@ -979,7 +981,7 @@ def validate_numeric_input(
         return
 
     try:
-        float(attr_values.numeric)  # type: ignore
+        float(attr_values.numeric)
     except ValueError:
         attribute_errors[AttributeInputErrors.ERROR_NUMERIC_VALUE_REQUIRED].append(
             attribute_id
@@ -1060,7 +1062,7 @@ def validate_required_attributes(
         ]
         error = ValidationError(
             "All attributes flagged as having a value required must be supplied.",
-            code=error_code_enum.REQUIRED.value,  # type: ignore
+            code=error_code_enum.REQUIRED.value,
             params={"attributes": ids},
         )
         errors.append(error)

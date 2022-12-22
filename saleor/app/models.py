@@ -1,4 +1,4 @@
-from typing import Collection, Set, Tuple, Union
+from typing import Iterable, Set, Tuple, Union
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Permission
@@ -86,7 +86,7 @@ class App(ModelWithMetadata):
             setattr(self, perm_cache_name, {f"{ct}.{name}" for ct, name in perms})
         return getattr(self, perm_cache_name)
 
-    def has_perms(self, perm_list: Collection[Union[BasePermissionEnum, str]]) -> bool:
+    def has_perms(self, perm_list: Iterable[Union[BasePermissionEnum, str]]) -> bool:
         """Return True if the app has each of the specified permissions."""
         if not self.is_active:
             return False

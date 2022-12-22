@@ -3,7 +3,7 @@ from collections import defaultdict
 import i18naddress
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import BoundField  # type: ignore
+from django.forms import BoundField
 from django_countries import countries
 
 from .models import Address
@@ -46,7 +46,7 @@ class PossiblePhoneNumberFormField(forms.CharField):
 
 
 class CountryAreaChoiceField(forms.ChoiceField):
-    widget = DatalistTextWidget  # type: ignore
+    widget = DatalistTextWidget
 
     def valid_value(self, value):
         return True

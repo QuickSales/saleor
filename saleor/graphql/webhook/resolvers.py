@@ -5,10 +5,10 @@ from ...checkout.fetch import (
 )
 from ...core.exceptions import PermissionDenied
 from ...core.permissions import AppPermission
-from ...core.tracing import traced_resolver
 from ...webhook import models, payloads
 from ...webhook.deprecated_event_types import WebhookEventType
 from ...webhook.event_types import WebhookEventAsyncType, WebhookEventSyncType
+from ..core.tracing import traced_resolver
 from ..core.utils import from_global_id_or_error
 from ..discount.dataloaders import load_discounts
 from .types import Webhook, WebhookEvent

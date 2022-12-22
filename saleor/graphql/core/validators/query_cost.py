@@ -184,7 +184,7 @@ class CostValidator(ValidationRule):
             for key in accessor:
                 val = val.get(key)
             try:
-                multipliers.append(int(val))  # type: ignore
+                multipliers.append(int(val))
             except (ValueError, TypeError):
                 pass
         multipliers = [

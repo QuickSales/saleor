@@ -157,9 +157,8 @@ def generate_metadata_updated_payload(
 
 def prepare_order_lines_allocations_payload(line):
     warehouse_id_quantity_allocated_map = list(
-        line.allocations.values(  # type: ignore
-            "quantity_allocated",
-            warehouse_id=F("stock__warehouse_id"),
+        line.allocations.values(
+            "quantity_allocated", warehouse_id=F("stock__warehouse_id")
         )
     )
     for item in warehouse_id_quantity_allocated_map:

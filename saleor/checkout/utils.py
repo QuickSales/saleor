@@ -161,7 +161,7 @@ def add_variant_to_checkout(
         if line is not None:
             line.delete()
     elif line is None:
-        checkout.lines.create(  # type: ignore
+        checkout.lines.create(
             variant=variant,
             quantity=new_quantity,
             currency=checkout.currency,
@@ -792,8 +792,8 @@ def get_valid_internal_shipping_methods_for_checkout(
     internal_methods = []
     for method in shipping_methods:
         listing = channel_listings_map.get(method.pk)
-        shipping_method_data = convert_to_shipping_method_data(method, listing)
-        if shipping_method_data:
+        if listing:
+            shipping_method_data = convert_to_shipping_method_data(method, listing)
             internal_methods.append(shipping_method_data)
 
     return internal_methods

@@ -3,12 +3,14 @@ from collections import defaultdict
 import graphene
 from django.core.exceptions import ValidationError
 
+from ....channel.error_codes import ChannelErrorCode
 from ....core.permissions import ChannelPermissions
 from ....core.tracing import traced_atomic_transaction
+from ...core import ResolveInfo
 from ...core.descriptions import ADDED_IN_37, PREVIEW_FEATURE
 from ...core.inputs import ReorderInput
 from ...core.mutations import BaseMutation
-from ...core.types import ChannelError, ChannelErrorCode, NonNullList
+from ...core.types import ChannelError, NonNullList
 from ...core.utils.reordering import perform_reordering
 from ...warehouse.types import Warehouse
 from ..types import Channel
@@ -40,7 +42,9 @@ class ChannelReorderWarehouses(BaseMutation):
         error_type_class = ChannelError
 
     @classmethod
-    def perform_mutation(cls, _root, info, channel_id, moves):
+    def perform_mutation(  # type: ignore[override]
+        cls, _root, info: ResolveInfo, /, *, channel_id, moves
+    ):
         channel = cls.get_node_or_error(
             info, channel_id, field="channel_id", only_type=Channel
         )
@@ -75,7 +79,7 @@ class ChannelReorderWarehouses(BaseMutation):
                 {
                     "moves": ValidationError(
                         "Couldn't resolve to a warehouse",
-                        code=ChannelErrorCode.NOT_FOUND,
+                        code=ChannelErrorCode.NOT_FOUND.value,
                         params={"warehouses": invalid_ids},
                     )
                 }

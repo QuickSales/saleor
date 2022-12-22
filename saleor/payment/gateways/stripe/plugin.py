@@ -20,7 +20,7 @@ from ...interface import (
 )
 from ...models import Transaction
 from ...utils import price_from_minor_unit, price_to_minor_unit
-from ..utils import get_supported_currencies, require_active_plugin
+from ..utils import get_supported_currencies
 from .stripe_api import (
     cancel_payment_intent,
     capture_payment_intent,
@@ -127,12 +127,14 @@ class StripeGatewayPlugin(BasePlugin):
         )
         return HttpResponseNotFound()
 
-    @require_active_plugin
     def token_is_required_as_payment_input(self, previous_value):
+        if not self.active:
+            return previous_value
         return False
 
-    @require_active_plugin
     def get_supported_currencies(self, previous_value):
+        if not self.active:
+            return previous_value
         return get_supported_currencies(self.config, PLUGIN_NAME)
 
     @property
@@ -171,10 +173,11 @@ class StripeGatewayPlugin(BasePlugin):
         else:
             return None
 
-    @require_active_plugin
     def process_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
+        if not self.active:
+            return previous_value
 
         api_key = self.config.connection_params["secret_api_key"]
 
@@ -270,10 +273,11 @@ class StripeGatewayPlugin(BasePlugin):
             payment_method_info=payment_method_info,
         )
 
-    @require_active_plugin
     def confirm_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
+        if not self.active:
+            return previous_value
         payment_intent_id = payment_information.token
         api_key = self.config.connection_params["secret_api_key"]
 
@@ -345,10 +349,11 @@ class StripeGatewayPlugin(BasePlugin):
             payment_method_info=payment_method_info,
         )
 
-    @require_active_plugin
     def capture_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
+        if not self.active:
+            return previous_value
         payment_intent_id = payment_information.token
         capture_amount = price_to_minor_unit(
             payment_information.amount, payment_information.currency
@@ -379,10 +384,11 @@ class StripeGatewayPlugin(BasePlugin):
             payment_method_info=payment_method_info,
         )
 
-    @require_active_plugin
     def refund_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
+        if not self.active:
+            return previous_value
         payment_intent_id = payment_information.token
         refund_amount = price_to_minor_unit(
             payment_information.amount, payment_information.currency
@@ -408,10 +414,11 @@ class StripeGatewayPlugin(BasePlugin):
             raw_response=raw_response,
         )
 
-    @require_active_plugin
     def void_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
+        if not self.active:
+            return previous_value
         payment_intent_id = payment_information.token
 
         payment_intent, error = cancel_payment_intent(
@@ -434,10 +441,11 @@ class StripeGatewayPlugin(BasePlugin):
             raw_response=raw_response,
         )
 
-    @require_active_plugin
     def list_payment_sources(
         self, customer_id: str, previous_value
     ) -> List[CustomerSource]:
+        if not self.active:
+            return previous_value
         payment_methods, error = list_customer_payment_methods(
             api_key=self.config.connection_params["secret_api_key"],
             customer_id=customer_id,
@@ -562,8 +570,9 @@ class StripeGatewayPlugin(BasePlugin):
                     }
                 )
 
-    @require_active_plugin
     def get_payment_config(self, previous_value):
+        if not self.active:
+            return previous_value
         return [
             {
                 "field": "api_key",

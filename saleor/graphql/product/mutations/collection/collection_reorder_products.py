@@ -6,6 +6,7 @@ from .....core.tracing import traced_atomic_transaction
 from .....product import models
 from .....product.error_codes import CollectionErrorCode, ProductErrorCode
 from ....channel import ChannelContext
+from ....core import ResolveInfo
 from ....core.mutations import BaseMutation
 from ....core.types import CollectionError, NonNullList
 from ....core.utils.reordering import perform_reordering
@@ -48,7 +49,9 @@ class CollectionReorderProducts(BaseMutation):
         )
 
     @classmethod
-    def perform_mutation(cls, _root, info, collection_id, moves):
+    def perform_mutation(  # type: ignore[override]
+        cls, _root, info: ResolveInfo, /, collection_id, moves
+    ):
         pk = cls.get_global_id_or_error(
             collection_id, only_type=Collection, field="collection_id"
         )
@@ -62,7 +65,7 @@ class CollectionReorderProducts(BaseMutation):
                 {
                     "collection_id": ValidationError(
                         f"Couldn't resolve to a collection: {collection_id}",
-                        code=ProductErrorCode.NOT_FOUND,
+                        code=ProductErrorCode.NOT_FOUND.value,
                     )
                 }
             )

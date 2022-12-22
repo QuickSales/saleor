@@ -50,7 +50,7 @@ def filter_discount_type(
         if VoucherDiscountType.PERCENTAGE in values:
             query |= Q(
                 discount_value_type=VoucherDiscountType.PERCENTAGE.value  # type: ignore
-            )  # type: ignore
+            )
         if VoucherDiscountType.SHIPPING in values:
             query |= Q(type=VoucherDiscountType.SHIPPING.value)  # type: ignore
         qs = qs.filter(query)

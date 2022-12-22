@@ -4,8 +4,7 @@ from typing import Any
 import pytz
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models, transaction
-from django.db.models import JSONField  # type: ignore
-from django.db.models import F, Max, Q
+from django.db.models import F, JSONField, Max, Q
 
 from . import EventDeliveryStatus, JobStatus
 from .utils.json_serializer import CustomJsonEncoder

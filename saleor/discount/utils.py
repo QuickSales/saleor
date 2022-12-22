@@ -283,7 +283,7 @@ def fetch_categories(sale_pks: Iterable[str]) -> Dict[int, Set[int]]:
     for sale_pk, category_pks in category_map.items():
         subcategory_map[sale_pk] = set(
             Category.tree.filter(pk__in=category_pks)
-            .get_descendants(include_self=True)  # type: ignore
+            .get_descendants(include_self=True)
             .values_list("pk", flat=True)
         )
     return subcategory_map

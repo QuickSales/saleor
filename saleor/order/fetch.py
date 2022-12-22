@@ -13,7 +13,7 @@ class OrderInfo:
     order: "Order"
     customer_email: "str"
     channel: "Channel"
-    payment: "Payment"
+    payment: Optional["Payment"]
     lines_data: Iterable["OrderLineInfo"]
 
 

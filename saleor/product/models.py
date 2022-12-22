@@ -10,7 +10,6 @@ from django.contrib.postgres.indexes import BTreeIndex, GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
-from django.db.models import JSONField  # type: ignore
 from django.db.models import (
     BooleanField,
     Case,
@@ -20,6 +19,7 @@ from django.db.models import (
     ExpressionWrapper,
     F,
     FilteredRelation,
+    JSONField,
     OuterRef,
     Q,
     Subquery,
@@ -93,7 +93,7 @@ class Category(ModelWithMetadata, MPTTModel, SeoModel):
     background_image_alt = models.CharField(max_length=128, blank=True)
 
     objects = models.Manager()
-    tree = TreeManager()  # type: ignore
+    tree = TreeManager()
     translated = TranslationProxy()
 
     class Meta:
@@ -156,7 +156,7 @@ class ProductType(ModelWithMetadata):
     is_digital = models.BooleanField(default=False)
     weight = MeasurementField(
         measurement=Weight,
-        unit_choices=WeightUnits.CHOICES,  # type: ignore
+        unit_choices=WeightUnits.CHOICES,
         default=zero_weight,
     )
     tax_class = models.ForeignKey(
@@ -419,7 +419,7 @@ class Product(SeoModel, ModelWithMetadata, ModelWithExternalReference):
     charge_taxes = models.BooleanField(default=True)
     weight = MeasurementField(
         measurement=Weight,
-        unit_choices=WeightUnits.CHOICES,  # type: ignore
+        unit_choices=WeightUnits.CHOICES,
         blank=True,
         null=True,
     )
@@ -609,7 +609,7 @@ class ProductVariant(SortableModel, ModelWithMetadata, ModelWithExternalReferenc
 
     weight = MeasurementField(
         measurement=Weight,
-        unit_choices=WeightUnits.CHOICES,  # type: ignore
+        unit_choices=WeightUnits.CHOICES,
         blank=True,
         null=True,
     )
@@ -901,6 +901,7 @@ class Collection(SeoModel, ModelWithMetadata):
         upload_to="collection-backgrounds", blank=True, null=True
     )
     background_image_alt = models.CharField(max_length=128, blank=True)
+
     description = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
 
     objects = models.Manager.from_queryset(CollectionsQueryset)()

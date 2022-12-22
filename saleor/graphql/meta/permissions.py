@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Union
 
 from django.core.exceptions import ValidationError
 
@@ -88,6 +88,7 @@ def menu_permissions(_info, _object_pk: Any) -> List[BasePermissionEnum]:
 def app_permissions(info, object_pk: str) -> List[BasePermissionEnum]:
     auth_token = info.context.decoded_auth_token or {}
     app = get_app_promise(info.context).get()
+    app_id: Union[str, int, None]
     if auth_token.get("type") == JWT_THIRDPARTY_ACCESS_TYPE:
         _, app_id = from_global_id_or_error(auth_token["app"], "App")
     else:

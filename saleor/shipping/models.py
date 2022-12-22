@@ -160,7 +160,7 @@ class ShippingMethodQueryset(models.QuerySet):
             return None
         if not country_code:
             # TODO: country_code should come from argument
-            country_code = instance.shipping_address.country.code  # type: ignore
+            country_code = instance.shipping_address.country.code
         if lines is None:
             # TODO: lines should comes from args in get_valid_shipping_methods_for_order
             lines = instance.lines.prefetch_related("variant__product").all()
@@ -188,20 +188,18 @@ class ShippingMethod(ModelWithMetadata):
     )
     minimum_order_weight = MeasurementField(
         measurement=Weight,
-        unit_choices=WeightUnits.CHOICES,  # type: ignore
+        unit_choices=WeightUnits.CHOICES,
         default=zero_weight,
         blank=True,
         null=True,
     )
     maximum_order_weight = MeasurementField(
         measurement=Weight,
-        unit_choices=WeightUnits.CHOICES,  # type: ignore
+        unit_choices=WeightUnits.CHOICES,
         blank=True,
         null=True,
     )
-    excluded_products = models.ManyToManyField(
-        "product.Product", blank=True
-    )  # type: ignore
+    excluded_products = models.ManyToManyField("product.Product", blank=True)
     maximum_delivery_days = models.PositiveIntegerField(null=True, blank=True)
     minimum_delivery_days = models.PositiveIntegerField(null=True, blank=True)
     description = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)

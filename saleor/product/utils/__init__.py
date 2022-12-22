@@ -32,7 +32,7 @@ def calculate_revenue_for_variant(
 
 
 @traced_atomic_transaction()
-def delete_categories(categories_ids: List[str], manager):
+def delete_categories(categories_ids: List[Union[str, int]], manager):
     """Delete categories and perform all necessary actions.
 
     Set products of deleted categories as unpublished, delete categories

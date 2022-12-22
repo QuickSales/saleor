@@ -256,7 +256,7 @@ def handle_not_created_order(notification, payment, checkout, kind, manager):
         )
 
     # Only when we confirm that notification is success we will create the order
-    if transaction.is_success and checkout:  # type: ignore
+    if transaction.is_success and checkout:
         confirm_payment_and_set_back_to_confirm(payment, manager, checkout.channel.slug)
         payment.refresh_from_db()  # refresh charge_status
         order = create_order(payment, checkout, manager)
@@ -1018,7 +1018,7 @@ def handle_webhook(request: WSGIRequest, gateway_config: "GatewayConfig"):
 
     event_handler = EVENT_MAP.get(notification.get("eventCode", ""))
     if event_handler:
-        event_handler(notification, gateway_config)  # type: ignore
+        event_handler(notification, gateway_config)
         return HttpResponse("[accepted]")
     return HttpResponse("[accepted]")
 
@@ -1125,7 +1125,7 @@ def prepare_api_request_data(request: WSGIRequest, data: dict):
 def prepare_redirect_url(
     payment_id: str, checkout_pk: str, api_response: Adyen.Adyen, return_url: str
 ):
-    checkout_id = graphene.Node.to_global_id("Checkout", checkout_pk)  # type: ignore
+    checkout_id = graphene.Node.to_global_id("Checkout", checkout_pk)
 
     params = {
         "checkout": checkout_id,

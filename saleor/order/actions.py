@@ -1162,7 +1162,7 @@ def create_replace_order(
             order_line_from_fulfillment = order_lines_with_fulfillment.get(
                 order_line_id
             )
-            order_line = order_line_from_fulfillment  # type: ignore
+            order_line = order_line_from_fulfillment
             order_line_id = order_line.pk
             order_line.pk = None
             order_line.order = replace_order
@@ -1295,13 +1295,13 @@ def create_return_fulfillment(
             returned_lines[line_data.line.id] = (line_data.quantity, line_data.line)
         for line_data in fulfillment_lines:
             order_line = order_lines_with_fulfillment.get(line_data.line.order_line_id)
-            returned_line = returned_lines.get(order_line.id)  # type: ignore
+            returned_line = returned_lines.get(order_line.id)
             if returned_line:
                 quantity, line = returned_line
                 quantity += line_data.quantity
-                returned_lines[order_line.id] = (quantity, line)  # type: ignore
+                returned_lines[order_line.id] = (quantity, line)
             else:
-                returned_lines[order_line.id] = (  # type: ignore
+                returned_lines[order_line.id] = (
                     line_data.quantity,
                     order_line,
                 )

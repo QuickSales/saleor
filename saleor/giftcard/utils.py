@@ -1,3 +1,4 @@
+import uuid
 from collections import defaultdict
 from datetime import date
 from typing import TYPE_CHECKING, Iterable, Optional
@@ -219,7 +220,7 @@ def calculate_expiry_date(settings):
     if settings.gift_card_expiry_type == GiftCardSettingsExpiryType.EXPIRY_PERIOD:
         expiry_period_type = settings.gift_card_expiry_period_type
         time_delta = {f"{expiry_period_type}s": settings.gift_card_expiry_period}
-        expiry_date = today + relativedelta(**time_delta)  # type: ignore
+        expiry_date = today + relativedelta(**time_delta)
     return expiry_date
 
 
@@ -246,7 +247,7 @@ def send_gift_cards_to_customer(
 
 
 def deactivate_order_gift_cards(
-    order_id: int, user: Optional["User"], app: Optional["App"]
+    order_id: uuid.UUID, user: Optional["User"], app: Optional["App"]
 ):
     gift_card_events = GiftCardEvent.objects.filter(
         type=GiftCardEvents.BOUGHT, order_id=order_id

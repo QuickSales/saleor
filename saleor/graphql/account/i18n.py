@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from ...account.forms import get_address_form
 from ...account.models import Address
 from ...account.validators import validate_possible_number
+from ..core import ResolveInfo
 
 
 class I18nMixin:
@@ -18,7 +19,7 @@ class I18nMixin:
         pass
 
     @classmethod
-    def clean_instance(cls, info, instance):
+    def clean_instance(cls, _info: ResolveInfo, _instance):
         pass
 
     @classmethod

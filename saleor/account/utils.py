@@ -125,7 +125,7 @@ def retrieve_user_by_email(email):
     if len(users) > 1:
         users_exact = [user for user in users if user.email == email]
         users_iexact = [user for user in users if user.email == email.lower()]
-        users = users_exact or users_iexact  # type: ignore
+        users = users_exact or users_iexact
 
     if users:
         return users[0]

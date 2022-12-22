@@ -7,6 +7,7 @@ from graphql import GraphQLError
 from ....core.permissions import CheckoutPermissions
 from ....tax import error_codes, models
 from ...account.enums import CountryCodeEnum
+from ...core import ResolveInfo
 from ...core.descriptions import ADDED_IN_39, PREVIEW_FEATURE
 from ...core.mutations import BaseMutation
 from ...core.types import Error, NonNullList
@@ -74,7 +75,7 @@ class TaxCountryConfigurationUpdate(BaseMutation):
         ]
         if len(default_rate_items) > 1:
             code = (
-                error_codes.TaxCountryConfigurationUpdateErrorCode.ONLY_ONE_DEFAULT_COUNTRY_RATE_ALLOWED  # noqa: E501
+                error_codes.TaxCountryConfigurationUpdateErrorCode.ONLY_ONE_DEFAULT_COUNTRY_RATE_ALLOWED.value  # noqa: E501
             )
             params = {"tax_class_ids": []}
             raise ValidationError(
@@ -110,7 +111,7 @@ class TaxCountryConfigurationUpdate(BaseMutation):
 
         if failed_ids:
             params = {"tax_class_ids": failed_ids}
-            code = error_codes.TaxCountryConfigurationUpdateErrorCode.NOT_FOUND
+            code = error_codes.TaxCountryConfigurationUpdateErrorCode.NOT_FOUND.value
             message = "Failed to resolve some of the provided tax class IDs."
             raise ValidationError(
                 {
@@ -132,7 +133,7 @@ class TaxCountryConfigurationUpdate(BaseMutation):
 
         if invalid_rates:
             code = (
-                error_codes.TaxCountryConfigurationUpdateErrorCode.CANNOT_CREATE_NEGATIVE_RATE  # noqa: E501
+                error_codes.TaxCountryConfigurationUpdateErrorCode.CANNOT_CREATE_NEGATIVE_RATE.value  # noqa: E501
             )
             message = "Cannot create rates with negative values."
             params = {
@@ -216,7 +217,7 @@ class TaxCountryConfigurationUpdate(BaseMutation):
         ).delete()
 
     @classmethod
-    def perform_mutation(cls, _root, _info, **data):
+    def perform_mutation(cls, _root, _info: ResolveInfo, /, **data):
         country_code = data["country_code"]
         cleaned_data = cls.clean_input(**data)
         cls.update_default_rate(country_code, cleaned_data)

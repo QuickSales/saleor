@@ -65,13 +65,19 @@ class GraphQLView(View):
     HANDLED_EXCEPTIONS = (GraphQLError, PyJWTError, ReadOnlyException, PermissionDenied)
 
     def __init__(
-        self, schema=None, executor=None, middleware=None, root_value=None, backend=None
+        self,
+        schema=None,
+        executor=None,
+        middleware: Optional[List[str]] = None,
+        root_value=None,
+        backend=None,
     ):
         super().__init__()
         if backend is None:
             backend = get_default_backend()
         if middleware is None:
-            if middleware := settings.GRAPHENE.get("MIDDLEWARE"):
+            middleware = settings.GRAPHQL_MIDDLEWARE
+            if middleware:
                 middleware = [
                     self.import_middleware(middleware_name)
                     for middleware_name in middleware
